@@ -122,8 +122,10 @@ class EleNtupler : public edm::EDAnalyzer {
   vector<float>  eleZ_;
   vector<float>  eleMatchedObjPt_;
   vector<float>  eleMatchedObjEta_;
+  vector<float>  eleMatchedObjPhi_;
   vector<float>  eleMatchedObjZ_;
   vector<float>  eleMatchedObjDz_;
+  vector<float>  eleMatchedObjDR_;
   vector<float>  eleR9_;
   vector<float>  eleCalibPt_;
   vector<float>  eleCalibEn_;

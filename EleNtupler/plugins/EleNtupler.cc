@@ -91,8 +91,10 @@ EleNtupler::EleNtupler(const edm::ParameterSet& iConfig)
   tree_->Branch("eleZ",                    &eleZ_);
   tree_->Branch("eleMatchedObjPt",         &eleMatchedObjPt_);
   tree_->Branch("eleMatchedObjEta",        &eleMatchedObjEta_);
+  tree_->Branch("eleMatchedObjPhi",        &eleMatchedObjPhi_);
   tree_->Branch("eleMatchedObjZ",          &eleMatchedObjZ_);
   tree_->Branch("eleMatchedObjDz",         &eleMatchedObjDz_);
+  tree_->Branch("eleMatchedObjDR",         &eleMatchedObjDR_);
   tree_->Branch("eleR9",                   &eleR9_);
   //tree_->Branch("eleCalibPt",              &eleCalibPt_);
   //tree_->Branch("eleCalibEn",              &eleCalibEn_);
@@ -169,8 +171,12 @@ EleNtupler::analyze(const edm::Event& e, const edm::EventSetup& es)
   eleEta_.clear();
   elePhi_.clear();
   eleZ_.clear();
+  eleMatchedObjPt_.clear();
+  eleMatchedObjEta_.clear();
+  eleMatchedObjPhi_.clear();
   eleMatchedObjZ_.clear();
   eleMatchedObjDz_.clear();
+  eleMatchedObjDR_.clear();
   eleR9_.clear();
   //eleCalibPt_.clear();
   //eleCalibEn_.clear();
@@ -396,8 +402,10 @@ EleNtupler::analyze(const edm::Event& e, const edm::EventSetup& es)
     // then, if there is a matched obj, we'll overwrite the zeros at position nEle_
     eleMatchedObjPt_ .push_back(0.);
     eleMatchedObjEta_.push_back(0.);
+    eleMatchedObjPhi_.push_back(0.);
     eleMatchedObjZ_  .push_back(0.);
     eleMatchedObjDz_ .push_back(0.);
+    eleMatchedObjDR_ .push_back(0.);
 
     for ( pat::TriggerObjectStandAlone obj : *triggerObjHandle ) {
       obj.unpackPathNames(names);
@@ -411,14 +419,17 @@ EleNtupler::analyze(const edm::Event& e, const edm::EventSetup& es)
       } // loop on filters
 
       if ( std::any_of(hasFilters.begin(), hasFilters.end(), [](bool b){return b;}) ) {
-	if ( dDeltaR(iEle->eta(), iEle->phi(), obj.eta(), obj.phi()) < trigFilterDeltaRCut_ ) {
+	double dR = dDeltaR(iEle->eta(), iEle->phi(), obj.eta(), obj.phi());
+	if ( dR < trigFilterDeltaRCut_ ) {
 	  // as described above, we want the matched obj to be aligned with the electron it matches
 	  // we could be more space efficient with an additional variable, vector<size_t> eleMatchedObjWhichEle_
 	  // then, however, we'd have to loop over the objects rather than the electrons
 	  eleMatchedObjPt_ .at(nEle_) = obj.pt();
 	  eleMatchedObjEta_.at(nEle_) = obj.eta();
+	  eleMatchedObjPhi_.at(nEle_) = obj.phi();
 	  eleMatchedObjZ_  .at(nEle_) = obj.vz();
 	  //eleMatchedObjDz_ .at(nEle_) = obj.bestTrack()->dz(pv);
+	  eleMatchedObjDR_ .at(nEle_) = dR;
 	  auto track = obj.bestTrack();
 	  if ( track ) {
 	    eleMatchedObjDz_.at(nEle_) = track->dz(pv);
